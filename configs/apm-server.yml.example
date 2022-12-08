@@ -1,0 +1,24 @@
+apm-server:
+  host: "0.0.0.0:8200"
+  auth:
+    secret_token: xxxxxx-xxxxx-xxxxx-xxxxx-xxxxx
+  rum:
+    enabled: true
+  # To enable remote configuration
+  kibana:
+    enabled: true
+    host: "https://kibana.example.com:5601"
+
+# https://www.elastic.co/guide/en/apm/server/current/configuring-output.html
+output:
+  elasticsearch:
+    hosts:
+      - es01:9200
+    username: "app_qa_apm_writer"
+    password: "xxxxxxxxxxxxxxxxxxxx"
+
+queue.mem.events: 4096
+
+max_procs: 4
+
+
