@@ -1,0 +1,31 @@
+version: '2.2'
+
+services:
+  create_certs:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.16.2
+    container_name: create_certs
+    environment:
+      - CA_PASS='TEMPORARY-PASS'
+    command: >
+      bash -c '
+        echo "Generating CA and certificate... "
+        rm  -f /certs/{elastic-stack-ca.p12,elastic-certificates.p12}
+        bin/elasticsearch-certutil ca -s --pass ${CA_PASS} --out /certs/elastic-stack-ca.p12
+        bin/elasticsearch-certutil cert -s --ca-pass ${CA_PASS} --ca /certs/elastic-stack-ca.p12 --out /certs/elastic-certificates.p12 --pass ""
+        chown -R 1000:0 /certs
+        echo "Success <3 "
+      '
+    working_dir: /usr/share/elasticsearch
+    volumes:
+      - ./certs:/certs
+    networks:
+      - elastic
+
+volumes:
+  certs:
+    driver: local
+
+networks:
+  elastic:
+    driver: bridge
+
