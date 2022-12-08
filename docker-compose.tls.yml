@@ -1,0 +1,120 @@
+version: '2.2'
+services:
+  es01:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.16.2
+    container_name: es01
+    profiles:
+      - es
+      - logging
+    environment:
+      - node.name=es01
+      - discovery.seed_hosts=es02
+    env_file:
+    #  - .env
+      - .env.es
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - esdata01:/usr/share/elasticsearch/data
+      - ./certs/elastic-certificates.p12:/usr/share/elasticsearch/config/elastic-certificates.p12:ro
+    ports:
+      - 9200:9200
+    healthcheck:
+      test: curl --cacert ./certs/elastic-stack-ca.p12 -s https://localhost:9200 >/dev/null; if [[ $$? == 52 ]]; then echo 0; else echo 1; fi
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - esnet
+
+  es02:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.16.2
+    container_name: es02
+    profiles:
+      - es
+      - logging
+    environment:
+      - node.name=es02
+      - discovery.seed_hosts=es01
+    env_file:
+    #  - .env
+      - .env.es
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - esdata02:/usr/share/elasticsearch/data
+      - ./certs/elastic-certificates.p12:/usr/share/elasticsearch/config/elastic-certificates.p12:ro
+    # healthcheck:
+    #    test: curl -s http://localhost:9200 >/dev/null || exit 1
+    #    interval: 30s
+    #    timeout: 10s
+    #    retries: 50
+    networks:
+      - esnet
+
+
+  # --user=apm-server
+  apm:
+    image: docker.elastic.co/apm/apm-server:7.15.2
+    container_name: apm-server
+    profiles:
+      - apm
+      - logging
+    command: --strict.perms=false -e    # -e flag to log to stderr and disable syslog/file output
+    env_file:
+    #  - .env
+      - .env.apm
+    ports:
+      - 8200:8200
+    volumes:
+      - "./configs/apm-server.yml:/usr/share/apm-server/apm-server.yml:ro"
+    restart: unless-stopped
+    networks:
+      - esnet
+    depends_on:
+      es01:
+        condition: service_healthy
+    healthcheck:
+       test: curl -s http://localhost:8200 >/dev/null || exit 1
+       interval: 30s
+       timeout: 10s
+       retries: 50
+
+  kibana:
+    image: kibana:7.16.2
+    container_name: kibana01
+    profiles:
+      - kibana
+      - logging
+    env_file:
+    #  - .env
+      - .env.kibana
+    ports:
+      - 5601:5601
+    # volumes:
+    #   - "${DATA_DIR}/kibana/kibana.yml:/usr/share/kibana/config/kibana.yml"
+    restart: unless-stopped
+    networks:
+      - esnet
+    depends_on:
+      es01:
+        condition: service_healthy
+#    healthcheck
+#       test: curl -s http://localhost:5601 >/dev/null || exit 1
+#       interval: 30s
+#       timeout: 10s
+#       retries: 50
+
+volumes:
+  esdata01:
+    driver: local
+  esdata02:
+    driver: local
+
+networks:
+  esnet:
+
