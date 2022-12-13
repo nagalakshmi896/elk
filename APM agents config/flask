@@ -1,0 +1,22 @@
+vi app.py
+
+from flask import Flask
+from elasticapm.contrib.flask import ElasticAPM
+from dotenv import load_dotenv
+load_dotenv('/srv/lab/lear-backend-api/.env')
+app = Flask(__name__)
+apm = ElasticAPM(app)
+#app.config['ELASTIC_APM'] = {
+# Set the required service name. Allowed characters:
+# a-z, A-Z, 0-9, -, _, and space
+#'SERVICE_NAME': os.environ.get('ELASTIC_APM_SERVICE_NAME')
+
+# Use if APM Server requires a secret token
+#'SECRET_TOKEN': os.environ.get('ELASTIC_APM_SECRET_TOKEN')
+
+# Set the custom APM Server URL (default: http://localhost:8200)
+#'SERVER_URL': os.environ.get('ELASTIC_APM_SECRET_TOKEN')
+
+# Set the service environment
+#'ENVIRONMENT': 'test',
+#}
