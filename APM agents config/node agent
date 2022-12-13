@@ -3,8 +3,44 @@ $ npm install elastic-apm-node --save
 docker build -t imagename .
 APP_IMAGE=imagename docker-compose up -d --build 
 hit the application and check in the kibana server
+
++++++++++++++++++++++++++++++++++++++++++++++
+step 2 for node config in code
+$ vi server.js or vi gunicon.js(add start of the code)
+
+
+// Add this to the VERY top of the first file loaded in your app
+var apm = require('elastic-apm-node').start({
+
+// Override the service name from package.json
+// Allowed characters: a-z, A-Z, 0-9, -, _, and space
+serviceName: process.env.ELASTIC_APM_SERVICE_NAME ?? '',
+
+// Use if APM Server requires a secret token
+secretToken: process.env.ELASTIC_APM_SECRET_TOKEN ?? '',
+
+// Set the custom APM Server URL (default: http://localhost:8200)
+serverUrl: process.env.ELASTIC_APM_SERVER_URL ?? '',
+
+// Set the service environment
+environment: process.env.ELASTIC_APM_ENVIRONMENT ?? '',
+
+})
+
 +++++++++++++++++++++++++++++++++++++++++++++++
-STEP1:Add APM agent in dockerfile
+
+step 2 enter variables in .env instead of add direct variables in server.js
+
+vi .env
+
+ELASTIC_APM_SERVICE_NAME=lear-web-qa
+ELASTIC_APM_SERVER_URL=http://10.2.3.28:8200
+ELASTIC_APM_SECRET_TOKEN=AunF47w1xLOgB2xSphT74driInck0GfqEfVSD9tvHGNdkOncFX
+ELASTIC_APM_ENVIRONMENT=qa
++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+STEP1:Add APM agent in dockerfile. (npm install elastic-apm-node --save)
 
 vi Dockerfile 
 
@@ -28,35 +64,4 @@ CMD ["npm", "start"]
 
 
 ++++++++++++++++++++++++++++++++++++++++++++++++++++
-step 2 enter variables in .env instead of add direct variables in server.js
 
-vi .env
-
-ELASTIC_APM_SERVICE_NAME=lear-web-qa
-ELASTIC_APM_SERVER_URL=http://10.2.3.28:8200
-ELASTIC_APM_SECRET_TOKEN=AunF47w1xLOgB2xSphT74driInck0GfqEfVSD9tvHGNdkOncFX
-ELASTIC_APM_ENVIRONMENT=qa
-+++++++++++++++++++++++++++++++++++++++++++++++++++++
-step 2 for node 
-
-$ vi server.js or vi gunicon.js(add start of the code)
-
-// Add this to the VERY top of the first file loaded in your app
-var apm = require('elastic-apm-node').start({
-
-// Override the service name from package.json
-// Allowed characters: a-z, A-Z, 0-9, -, _, and space
-serviceName: process.env.ELASTIC_APM_SERVICE_NAME ?? '',
-
-// Use if APM Server requires a secret token
-secretToken: process.env.ELASTIC_APM_SECRET_TOKEN ?? '',
-
-// Set the custom APM Server URL (default: http://localhost:8200)
-serverUrl: process.env.ELASTIC_APM_SERVER_URL ?? '',
-
-// Set the service environment
-environment: process.env.ELASTIC_APM_ENVIRONMENT ?? '',
-
-})
-
-+++++++++++++++++++++
