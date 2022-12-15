@@ -10,8 +10,32 @@ ls ./certs
 elastic-certificates.p12  elastic-stack-ca.p12
 
 $ vi .env.es
+{
+# Basic configs
+cluster.initial_master_nodes=es01,es02
+cluster.name=es-docker-cluster
+bootstrap.memory_lock=true
+ES_JAVA_OPTS=-Xms512m -Xmx512m
+
+# Security Configs
+xpack.security.enabled=true
+xpack.security.transport.ssl.enabled=true
+xpack.security.transport.ssl.keystore.type=PKCS12
+xpack.security.transport.ssl.verification_mode=certificate
+xpack.security.transport.ssl.keystore.path=elastic-certificates.p12
+xpack.security.transport.ssl.truststore.path=elastic-certificates.p12
+xpack.security.transport.ssl.truststore.type=PKCS12
+
+xpack.security.audit.enabled=true
+ELASTIC_PASSWORD=zpUd7M366c4qrChm3xce
+}
 
 $ vi .env.apm
+{
+output.elasticsearch.hosts=http://es01:9200
+SERVER_PUBLICBASEURL=http://10.2.3.28:5601
+}
+
 
 $ vi .env.kibana
 {
